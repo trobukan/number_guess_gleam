@@ -8,6 +8,7 @@ pub fn main() {
   // Welcome Message
   welcome()
 
+  // Randomize from 1 to 100
   let goal = int.clamp(int.random(100), 1, 100)
   let guesses = choose_difficult()
   io.println("Let's start the game!")
@@ -29,22 +30,25 @@ fn game(goal goal: Int, guesses guesses: Int) {
       case input {
         _ if input == goal -> io.println("Congratulations! You won!")
         _ if input > goal -> {
+          let guesses = guesses - 1
           io.println(
             "Incorrect! The number is less than "
             <> int.to_string(input)
             <> ".guesses left: "
             <> int.to_string(guesses),
           )
-          game(goal:, guesses: guesses - 1)
+
+          game(goal:, guesses: guesses)
         }
         _ -> {
+          let guesses = guesses - 1
           io.println(
             "Incorrect! The number is greater than "
             <> int.to_string(input)
             <> ".guesses left: "
             <> int.to_string(guesses),
           )
-          game(goal:, guesses: guesses - 1)
+          game(goal:, guesses: guesses)
         }
       }
     }
@@ -82,7 +86,7 @@ fn welcome() -> Nil {
   |> string.append("I'm thinking of a number between 1 and 100\n\n")
   |> string.append("Please select the difficult level:\n")
   |> string.append("1. Easy (10 chances)\n")
-  |> string.append("2. Medium (5 chances\n")
-  |> string.append("3. Hard (3 chances\n")
+  |> string.append("2. Medium (5 chances)\n")
+  |> string.append("3. Hard (3 chances)\n")
   |> io.println
 }

@@ -6,23 +6,26 @@ import time
 import utils
 
 pub opaque type Game {
-  Game(goal: Int)
+  Game(goal: Int, guesses: Int, start_time: Int, attempts: Int)
 }
 
 fn new_game() -> Game {
-  Game(goal: goal_randomize())
+  Game(
+    goal: goal_randomize(),
+    guesses: choose_difficult(),
+    start_time: time.now(time.Second),
+    attempts: 1,
+  )
 }
 
 pub fn main() {
-  let game: Game = new_game()
-
   welcome_msg()
+  let game: Game = new_game()
+  echo game.goal
 
-  let guesses = choose_difficult()
-  let start_time = time.now(time.Second)
   io.println("Let's start the game!")
 
-  start_game(goal: game.goal, guesses:, start_time:, attempts: 1)
+  start_game(game)
   restart_game()
 }
 
@@ -76,27 +79,22 @@ fn restart_game() {
   let assert Ok(input) = in.read_line()
   case string.trim(input) {
     "1" -> {
-      let guesses = choose_difficult()
-      let start_time = time.now(time.Second)
       io.println("Let's start the game!\n")
 
       let game = new_game()
-      start_game(goal: game.goal, guesses:, start_time:, attempts: 1)
+      start_game(game)
     }
     "2" -> utils.exit_program(msg: "Thanks for playing!")
     _ -> restart_game()
   }
 }
 
-fn start_game(
-  goal goal: Int,
-  guesses guesses: Int,
-  start_time start_time: Int,
-  attempts attempts: Int,
-) {
-  case guesses <= 0 {
+fn start_game(game game: Game) {
+  case game.guesses <= 0 {
     True ->
-      io.println("Game over! The number was " <> int.to_string(goal) <> "\n")
+      io.println(
+        "Game over! The number was " <> int.to_string(game.goal) <> "\n",
+      )
     False -> {
       io.print("Enter your guess: ")
       let assert Ok(input) = in.read_line()
@@ -107,48 +105,51 @@ fn start_game(
       case input {
         Ok(value) ->
           case value {
-            _ if value == goal -> {
-              let attempt_msg = case attempts {
+            _ if value == game.goal -> {
+              let attempt_msg = case game.attempts {
                 1 -> "attempt"
                 _ -> "attempts"
               }
               io.println(
                 "\nCongratulations! You won with "
-                <> int.to_string(attempts)
+                <> int.to_string(game.attempts)
                 <> " "
                 <> attempt_msg
                 <> ".",
               )
-              show_elapsed_time(start_time)
+              show_elapsed_time(game.start_time)
             }
 
-            _ if value > goal -> {
-              let guesses = guesses - 1
-              let attempts = attempts + 1
+            _ if value > game.goal -> {
+              let attempts = game.attempts + 1
+              let guesses = game.guesses - 1
+              let game: Game = Game(..game, attempts:, guesses:)
+
               io.println(
                 "Incorrect! The number is less than "
                 <> int.to_string(value)
                 <> ". guesses left: "
-                <> int.to_string(guesses),
+                <> int.to_string(game.guesses),
               )
 
-              start_game(goal:, guesses:, start_time:, attempts:)
+              start_game(game)
             }
             _ -> {
-              let guesses = guesses - 1
-              let attempts = attempts + 1
+              let attempts = game.attempts + 1
+              let guesses = game.guesses - 1
+              let game: Game = Game(..game, attempts:, guesses:)
               io.println(
                 "Incorrect! The number is greater than "
                 <> int.to_string(value)
                 <> ". guesses left: "
                 <> int.to_string(guesses),
               )
-              start_game(goal:, guesses:, start_time:, attempts:)
+              start_game(game)
             }
           }
         Error(_) -> {
           io.println("\nYou must insert a number\n")
-          start_game(goal: goal, guesses:, start_time:, attempts:)
+          start_game(game)
         }
       }
     }

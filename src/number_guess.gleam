@@ -1,6 +1,5 @@
 import gleam/int
 import gleam/io
-import gleam/result
 import gleam/string
 import in
 import utils
@@ -12,7 +11,6 @@ type Game {
 pub fn main() {
   let game: Game = Game(goal: goal_randomize())
 
-  echo utils.is_number(20)
   welcome_msg()
 
   let guesses = choose_difficult()
@@ -36,6 +34,8 @@ fn choose_difficult() -> Int {
     <> "2. Medium (5 chances)\n"
     <> "3. Hard (3 chances)\n",
   )
+
+  io.print("> ")
   let assert Ok(difficult) = in.read_line()
   let difficult: String = string.trim(difficult)
   case difficult {
@@ -69,8 +69,9 @@ fn new_game() -> Game {
 }
 
 fn restart_game() {
-  io.println("Do you want to keep playing?\n" <> "1. Yes\n" <> "2. No")
+  io.println("Do you want to keep playing?\n" <> "1. Yes\n" <> "2. No\n")
 
+  io.print("> ")
   let assert Ok(input) = in.read_line()
   case string.trim(input) {
     "1" -> {
@@ -80,7 +81,7 @@ fn restart_game() {
       let game = new_game()
       start_game(goal: game.goal, guesses:)
     }
-    "2" -> utils.exit_program(msg: "Thanks for playing!\n")
+    "2" -> utils.exit_program(msg: "Thanks for playing!")
     _ -> restart_game()
   }
 }
@@ -95,30 +96,36 @@ fn start_game(goal goal: Int, guesses guesses: Int) {
       let input =
         string.trim(input)
         |> int.parse()
-        |> result.unwrap(or: 0)
 
       case input {
-        _ if input == goal -> io.println("Congratulations! You won!\n")
-        _ if input > goal -> {
-          let guesses = guesses - 1
-          io.println(
-            "Incorrect! The number is less than "
-            <> int.to_string(input)
-            <> ". guesses left: "
-            <> int.to_string(guesses),
-          )
+        Ok(value) ->
+          case value {
+            _ if value == goal -> io.println("Congratulations! You won!\n")
+            _ if value > goal -> {
+              let guesses = guesses - 1
+              io.println(
+                "Incorrect! The number is less than "
+                <> int.to_string(value)
+                <> ". guesses left: "
+                <> int.to_string(guesses),
+              )
 
-          start_game(goal:, guesses: guesses)
-        }
-        _ -> {
-          let guesses = guesses - 1
-          io.println(
-            "Incorrect! The number is greater than "
-            <> int.to_string(input)
-            <> ". guesses left: "
-            <> int.to_string(guesses),
-          )
-          start_game(goal:, guesses: guesses)
+              start_game(goal:, guesses: guesses)
+            }
+            _ -> {
+              let guesses = guesses - 1
+              io.println(
+                "Incorrect! The number is greater than "
+                <> int.to_string(value)
+                <> ". guesses left: "
+                <> int.to_string(guesses),
+              )
+              start_game(goal:, guesses: guesses)
+            }
+          }
+        Error(_) -> {
+          io.println("\nYou must insert a number\n")
+          start_game(goal: goal, guesses:)
         }
       }
     }

@@ -21,7 +21,6 @@ fn new_game() -> Game {
 pub fn main() {
   welcome_msg()
   let game: Game = new_game()
-  echo game.goal
 
   io.println("Let's start the game!")
 

@@ -5,7 +5,7 @@ import in
 import time
 import utils
 
-type Game {
+pub opaque type Game {
   Game(goal: Int)
 }
 
@@ -14,11 +14,9 @@ fn new_game() -> Game {
 }
 
 pub fn main() {
-  let game: Game = Game(goal: goal_randomize())
+  let game: Game = new_game()
 
   welcome_msg()
-
-  echo game.goal
 
   let guesses = choose_difficult()
   let start_time = time.now(time.Second)

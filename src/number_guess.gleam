@@ -2,10 +2,15 @@ import gleam/int
 import gleam/io
 import gleam/string
 import in
+import time
 import utils
 
 type Game {
   Game(goal: Int)
+}
+
+fn new_game() -> Game {
+  Game(goal: goal_randomize())
 }
 
 pub fn main() {
@@ -14,9 +19,10 @@ pub fn main() {
   welcome_msg()
 
   let guesses = choose_difficult()
+  let start_time = time.now(time.Second)
   io.println("Let's start the game!")
 
-  start_game(goal: game.goal, guesses:)
+  start_game(goal: game.goal, guesses:, start_time:)
   restart_game()
 }
 
@@ -53,7 +59,6 @@ fn choose_difficult() -> Int {
       3
     }
     _ -> {
-      io.println("Please, choose a number your difficult")
       choose_difficult()
     }
   }
@@ -64,10 +69,6 @@ fn goal_randomize() -> Int {
   |> int.clamp(1, 100)
 }
 
-fn new_game() -> Game {
-  Game(goal: goal_randomize())
-}
-
 fn restart_game() {
   io.println("Do you want to keep playing?\n" <> "1. Yes\n" <> "2. No\n")
 
@@ -76,17 +77,18 @@ fn restart_game() {
   case string.trim(input) {
     "1" -> {
       let guesses = choose_difficult()
+      let start_time = time.now(time.Second)
       io.println("Let's start the game!\n")
 
       let game = new_game()
-      start_game(goal: game.goal, guesses:)
+      start_game(goal: game.goal, guesses:, start_time:)
     }
     "2" -> utils.exit_program(msg: "Thanks for playing!")
     _ -> restart_game()
   }
 }
 
-fn start_game(goal goal: Int, guesses guesses: Int) {
+fn start_game(goal goal: Int, guesses guesses: Int, start_time start_time: Int) {
   case guesses <= 0 {
     True ->
       io.println("Game over! The number was " <> int.to_string(goal) <> "\n")
@@ -100,7 +102,11 @@ fn start_game(goal goal: Int, guesses guesses: Int) {
       case input {
         Ok(value) ->
           case value {
-            _ if value == goal -> io.println("Congratulations! You won!\n")
+            _ if value == goal -> {
+              io.println("\nCongratulations! You won!")
+              show_elapsed_time(start_time)
+            }
+
             _ if value > goal -> {
               let guesses = guesses - 1
               io.println(
@@ -110,7 +116,7 @@ fn start_game(goal goal: Int, guesses guesses: Int) {
                 <> int.to_string(guesses),
               )
 
-              start_game(goal:, guesses: guesses)
+              start_game(goal:, guesses:, start_time:)
             }
             _ -> {
               let guesses = guesses - 1
@@ -120,14 +126,20 @@ fn start_game(goal goal: Int, guesses guesses: Int) {
                 <> ". guesses left: "
                 <> int.to_string(guesses),
               )
-              start_game(goal:, guesses: guesses)
+              start_game(goal:, guesses:, start_time:)
             }
           }
         Error(_) -> {
           io.println("\nYou must insert a number\n")
-          start_game(goal: goal, guesses:)
+          start_game(goal: goal, guesses:, start_time:)
         }
       }
     }
   }
+}
+
+fn show_elapsed_time(start_time: Int) {
+  let end_time = time.now(time.Second)
+  let diff = end_time - start_time
+  io.println("You took " <> int.to_string(diff) <> " Seconds\n")
 }
